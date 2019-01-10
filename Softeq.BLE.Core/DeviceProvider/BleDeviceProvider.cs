@@ -14,19 +14,18 @@ using Softeq.BLE.Core.Utils;
 
 namespace Softeq.BLE.Core.DeviceProvider
 {
-    internal sealed class BleDeviceProvider<TBleDevice, TIdentifier> : IDeviceProvider<TBleDevice, TIdentifier>
-        where TIdentifier : IEquatable<TIdentifier>
+    internal sealed class BleDeviceProvider<TBleDevice> : IDeviceProvider<TBleDevice>
     {
-        private readonly IDeviceClassProtocol<TIdentifier> _deviceClassProtocol;
-        private readonly IBleDeviceFactory<TBleDevice, TIdentifier> _deviceFactory;
+        private readonly IDeviceClassProtocol _deviceClassProtocol;
+        private readonly IBleDeviceFactory<TBleDevice> _deviceFactory;
         private readonly IBleInfrastructure _bleInfrastructure;
         private readonly IDeviceFilter _generalDeviceFilter;
 
-        private readonly Dictionary<TIdentifier, TBleDevice> _cachedDevices = new Dictionary<TIdentifier, TBleDevice>();
+        private readonly Dictionary<string, TBleDevice> _cachedDevices = new Dictionary<string, TBleDevice>();
 
         public IReadOnlyList<TBleDevice> KnownDevices => _cachedDevices.Values.ToList();
 
-        public BleDeviceProvider(IDeviceClassProtocol<TIdentifier> deviceClassProtocol, IBleDeviceFactory<TBleDevice, TIdentifier> deviceFactory,
+        public BleDeviceProvider(IDeviceClassProtocol deviceClassProtocol, IBleDeviceFactory<TBleDevice> deviceFactory,
             IBleInfrastructure bleInfrastructure)
         {
             _deviceClassProtocol = deviceClassProtocol;
@@ -36,11 +35,11 @@ namespace Softeq.BLE.Core.DeviceProvider
             _generalDeviceFilter = new GeneralDeviceFilter(deviceClassProtocol);
         }
 
-        public TBleDevice GetDeviceById(TIdentifier deviceId)
+        public TBleDevice GetDeviceById(string deviceId)
         {
             if (!_cachedDevices.ContainsKey(deviceId))
             {
-                var bleDeviceBase = new BleDeviceBase<TIdentifier>(null, deviceId, _deviceClassProtocol, _bleInfrastructure);
+                var bleDeviceBase = new BleDeviceBase(null, deviceId, _deviceClassProtocol, _bleInfrastructure);
                 var bleDevice = _deviceFactory.CreateDevice(bleDeviceBase, _bleInfrastructure.Logger);
                 _cachedDevices.Add(deviceId, bleDevice);
             }
@@ -94,7 +93,7 @@ namespace Softeq.BLE.Core.DeviceProvider
             var deviceId = _deviceClassProtocol.GetIdentifier(device);
             if (!_cachedDevices.ContainsKey(deviceId))
             {
-                var bleDeviceBase = new BleDeviceBase<TIdentifier>(device, deviceId, _deviceClassProtocol, _bleInfrastructure);
+                var bleDeviceBase = new BleDeviceBase(device, deviceId, _deviceClassProtocol, _bleInfrastructure);
                 var bleDevice = _deviceFactory.CreateDevice(bleDeviceBase, _bleInfrastructure.Logger);
                 _cachedDevices.Add(deviceId, bleDevice);
             }

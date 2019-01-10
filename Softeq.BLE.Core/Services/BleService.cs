@@ -11,11 +11,10 @@ using Softeq.BLE.Core.Result;
 
 namespace Softeq.BLE.Core.Services
 {
-    public class BleService<TDevice, TIdentifier, TBleProtocol>
-        where TIdentifier : IEquatable<TIdentifier>
-        where TBleProtocol : IDeviceClassProtocol<TIdentifier>, new()
+    public class BleService<TDevice, TBleProtocol>
+        where TBleProtocol : IDeviceClassProtocol, new()
     {
-        protected readonly IDeviceProvider<TDevice, TIdentifier> _deviceProvider;
+        protected readonly IDeviceProvider<TDevice> _deviceProvider;
         private readonly IBleInfrastructure _bleIfrastructure;
 
         public IBleAvailability BleAvailability => _bleIfrastructure.BleAvailability;
@@ -23,7 +22,7 @@ namespace Softeq.BLE.Core.Services
         public IReadOnlyList<TDevice> KnownDevices => _deviceProvider.KnownDevices;
 
         public BleService(IBluetoothLE bluetoothService,
-                          Func<IBleDeviceBase<TIdentifier>, IBleLogger, TDevice> createDevice,
+                          Func<IBleDeviceBase, IBleLogger, TDevice> createDevice,
                           IBleExecutionProvider bleExecutionProvider = null,
                           IBleLogger logger = null)
         {
@@ -36,11 +35,11 @@ namespace Softeq.BLE.Core.Services
                 logger = new BleLoggerDefault();
             }
             _bleIfrastructure = new BleInfrastructure(bluetoothService, bleExecutionProvider, logger);
-            var bleDeviceFactory = new BleDeviceFactoryDefault<TDevice, TIdentifier>(createDevice);
-            _deviceProvider = new BleDeviceProvider<TDevice, TIdentifier>(new TBleProtocol(), bleDeviceFactory, _bleIfrastructure);
+            var bleDeviceFactory = new BleDeviceFactoryDefault<TDevice>(createDevice);
+            _deviceProvider = new BleDeviceProvider<TDevice>(new TBleProtocol(), bleDeviceFactory, _bleIfrastructure);
         }
 
-        public TDevice GetCollarDevice(TIdentifier deviceId)
+        public TDevice GetCollarDevice(string deviceId)
         {
             return _deviceProvider.GetDeviceById(deviceId);
         }

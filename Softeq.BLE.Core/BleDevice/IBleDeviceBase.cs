@@ -5,10 +5,9 @@ using Softeq.BLE.Core.BleDevice.Factory;
 
 namespace Softeq.BLE.Core.BleDevice
 {
-    public interface IBleDeviceBase<out T> 
-        where T : IEquatable<T>
+    public interface IBleDeviceBase 
     {
-        T DeviceId { get; }
+        string DeviceId { get; }
         string DeviceName { get; }
         IReadOnlyList<AdvertisementRecord> AdvertisementRecords { get; }
         IBehaviorFactory BehaviorFactory { get; }

@@ -9,7 +9,7 @@ using Softeq.BLE.Core.Utils.Extensions;
 
 namespace Softeq.BLE.Core.BleDevice.Core
 {
-    internal sealed partial class BleDeviceBase<T>
+    internal sealed partial class BleDeviceBase
     {
         public Task<IBleResult> TryConnectAsync(CancellationToken cancellationToken)
         {

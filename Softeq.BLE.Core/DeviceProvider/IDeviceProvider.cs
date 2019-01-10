@@ -6,12 +6,11 @@ using Softeq.BLE.Core.Result;
 
 namespace Softeq.BLE.Core.DeviceProvider
 {
-    public interface IDeviceProvider<TBleDevice, in TIdentifier>
-        where TIdentifier : IEquatable<TIdentifier>
+    public interface IDeviceProvider<TBleDevice>
     {
         IReadOnlyList<TBleDevice> KnownDevices { get; }
 
-        TBleDevice GetDeviceById(TIdentifier deviceId);
+        TBleDevice GetDeviceById(string deviceId);
         Task<IBleResult<IReadOnlyList<TBleDevice>>> SearchForDevicesAsync(bool includeConnected, TimeSpan timeout, CancellationToken cancellationToken = default);
         Task<IBleResult> BeginSearchForDevicesAsync(IObserver<TBleDevice> observer, bool includeConnected, TimeSpan timeout, CancellationToken cancellationToken = default);
     }

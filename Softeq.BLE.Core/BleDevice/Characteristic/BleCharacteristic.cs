@@ -27,7 +27,7 @@ namespace Softeq.BLE.Core.BleDevice.Characteristic
             _serviceId = serviceId;
             _characteristicId = characteristicId;
             _bleExecutionProvider = bleExecutionProvider;
-
+            
             connectionSubscriber.AddListener(this);
         }
 

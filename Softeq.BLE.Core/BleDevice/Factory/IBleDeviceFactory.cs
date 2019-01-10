@@ -1,11 +1,9 @@
-﻿using System;
-using Softeq.BLE.Core.Services;
+﻿using Softeq.BLE.Core.Services;
 
 namespace Softeq.BLE.Core.BleDevice.Factory
 {
-    public interface IBleDeviceFactory<out TBleDevice, in TIdentifier>
-        where TIdentifier : IEquatable<TIdentifier>
+    public interface IBleDeviceFactory<out TBleDevice>
     {
-        TBleDevice CreateDevice(IBleDeviceBase<TIdentifier> bleDeviceBase, IBleLogger logger);
+        TBleDevice CreateDevice(IBleDeviceBase bleDeviceBase, IBleLogger logger);
     }
 }

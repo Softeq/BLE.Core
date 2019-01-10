@@ -15,8 +15,7 @@ using Softeq.BLE.Core.BleDevice.Factory;
 
 namespace Softeq.BLE.Core.BleDevice.Core
 {
-    internal sealed partial class BleDeviceBase<T> : IBleDeviceBase<T>, IBleDeviceCoreFunctionality, IListener<DeviceConnectionEvent>
-        where T : IEquatable<T>
+    internal sealed partial class BleDeviceBase : IBleDeviceBase, IBleDeviceCoreFunctionality, IListener<DeviceConnectionEvent>
     {
         private const string LogSender = "BleDeviceBase";
 
@@ -38,10 +37,10 @@ namespace Softeq.BLE.Core.BleDevice.Core
         public string DeviceName => _device?.Name;
         public IReadOnlyList<AdvertisementRecord> AdvertisementRecords => _device.AdvertisementRecords.ToList();
 
-        public T DeviceId { get; }
+        public string DeviceId { get; }
         public IBehaviorFactory BehaviorFactory { get; }
 
-        public BleDeviceBase(IDevice device, T id, IDeviceClassProtocol<T> deviceClassProtocol, IBleInfrastructure bleInfrastructure)
+        public BleDeviceBase(IDevice device, string id, IDeviceClassProtocol deviceClassProtocol, IBleInfrastructure bleInfrastructure)
         {
             DeviceId = id;
             BehaviorFactory = new DeviceBehaviorFactory(this, bleInfrastructure.Executor, bleInfrastructure.Logger);
@@ -49,7 +48,7 @@ namespace Softeq.BLE.Core.BleDevice.Core
             _device = device;
             _bleInfrastructure = bleInfrastructure;
 
-            _deviceSearchFilter = new SpecificDeviceFilter<T>(id, deviceClassProtocol);
+            _deviceSearchFilter = new SpecificDeviceFilter(id, deviceClassProtocol);
 
             _deviceCharacteristics = CreateCharacteristics(deviceClassProtocol, _bleInfrastructure.CharacteristicFactory,
                 _bleInfrastructure.ExecutionProvider);
@@ -85,7 +84,7 @@ namespace Softeq.BLE.Core.BleDevice.Core
             }
         }
 
-        private IReadOnlyDictionary<Guid, IBleCharacteristic> CreateCharacteristics(IDeviceClassProtocol<T> bleProtocol,
+        private IReadOnlyDictionary<Guid, IBleCharacteristic> CreateCharacteristics(IDeviceClassProtocol bleProtocol,
             ICharacteristicFactory characteristicFactory, IBleExecutionProvider executionProvider)
         {
             var characteristics = new Dictionary<Guid, IBleCharacteristic>();

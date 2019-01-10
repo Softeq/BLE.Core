@@ -3,12 +3,11 @@ using Softeq.BLE.Core.Services;
 
 namespace Softeq.BLE.Core.BleDevice.Factory
 {
-    public class BleDeviceFactoryDefault<TBleDevice, TIdentifier> : IBleDeviceFactory<TBleDevice, TIdentifier>
-        where TIdentifier : IEquatable<TIdentifier>
+    public class BleDeviceFactoryDefault<TBleDevice> : IBleDeviceFactory<TBleDevice>
     {
-        private readonly Func<IBleDeviceBase<TIdentifier>, IBleLogger, TBleDevice> _funcCreateDevice;
+        private readonly Func<IBleDeviceBase, IBleLogger, TBleDevice> _funcCreateDevice;
 
-        public BleDeviceFactoryDefault(Func<IBleDeviceBase<TIdentifier>, IBleLogger, TBleDevice> createDevice)
+        public BleDeviceFactoryDefault(Func<IBleDeviceBase, IBleLogger, TBleDevice> createDevice)
         {
             if (createDevice == null)
             {
@@ -17,7 +16,7 @@ namespace Softeq.BLE.Core.BleDevice.Factory
             _funcCreateDevice = createDevice;
         }
 
-        public TBleDevice CreateDevice(IBleDeviceBase<TIdentifier> bleDeviceBase, IBleLogger logger)
+        public TBleDevice CreateDevice(IBleDeviceBase bleDeviceBase, IBleLogger logger)
         {
             return _funcCreateDevice.Invoke(bleDeviceBase, logger);
         }

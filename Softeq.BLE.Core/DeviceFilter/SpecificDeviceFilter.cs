@@ -6,13 +6,12 @@ using Softeq.BLE.Core.Protocol;
 
 namespace Softeq.BLE.Core.DeviceFilter
 {
-    internal sealed class SpecificDeviceFilter<TIdentifier> : IDeviceFilter
-        where TIdentifier : IEquatable<TIdentifier>
+    internal sealed class SpecificDeviceFilter : IDeviceFilter
     {
-        private readonly TIdentifier _deviceId;
-        private readonly IDeviceClassProtocol<TIdentifier> _deviceClassProtocol;
+        private readonly string _deviceId;
+        private readonly IDeviceClassProtocol _deviceClassProtocol;
 
-        public SpecificDeviceFilter(TIdentifier deviceId, IDeviceClassProtocol<TIdentifier> deviceClassProtocol)
+        public SpecificDeviceFilter(string deviceId, IDeviceClassProtocol deviceClassProtocol)
         {
             _deviceId = deviceId;
             _deviceClassProtocol = deviceClassProtocol;
@@ -20,8 +19,7 @@ namespace Softeq.BLE.Core.DeviceFilter
 
         public bool IsWantedDevice(IDevice device)
         {
-            return _deviceClassProtocol.DoesBelongToClass(device) &&
-                   EqualityComparer<TIdentifier>.Default.Equals(_deviceId, _deviceClassProtocol.GetIdentifier(device));
+            return _deviceClassProtocol.DoesBelongToClass(device) && _deviceId == _deviceClassProtocol.GetIdentifier(device);
         }
     }
 }

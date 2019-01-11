@@ -12,9 +12,8 @@ using Softeq.BLE.Core.Utils;
 
 namespace Softeq.BLE.Core.Services
 {
-    public sealed class BleService<TIdentifier, TBleProtocol>
+    public sealed class BleService<TIdentifier>
         where TIdentifier : IEquatable<TIdentifier>
-        where TBleProtocol : IDeviceClassProtocol<TIdentifier>, new()
     {
         private readonly Dictionary<Type, IDeviceProvider<object, TIdentifier>> _deviceProviders
             = new Dictionary<Type, IDeviceProvider<object, TIdentifier>>();
@@ -37,7 +36,8 @@ namespace Softeq.BLE.Core.Services
             _bleIfrastructure = new BleInfrastructure(bluetoothService, bleExecutionProvider, logger);
         }
 
-        public void RegisterDeviceType<TDevice>(Func<IBleDeviceBase<TIdentifier>, IBleLogger, TDevice> createDevice)
+        public void RegisterDeviceType<TDevice, TBleProtocol>(Func<IBleDeviceBase<TIdentifier>, IBleLogger, TDevice> createDevice)
+            where TBleProtocol : IDeviceClassProtocol<TIdentifier>, new()
         {
             if (_deviceProviders.ContainsKey(typeof(TDevice)))
             {

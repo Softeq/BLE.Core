@@ -4,8 +4,8 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Plugin.BLE.Abstractions.Contracts;
+using Softeq.BLE.Core.BleDevice;
 using Softeq.BLE.Core.BleDevice.Core;
-using Softeq.BLE.Core.BleDevice.Factory;
 using Softeq.BLE.Core.DeviceFilter;
 using Softeq.BLE.Core.Protocol;
 using Softeq.BLE.Core.Result;
@@ -14,41 +14,41 @@ using Softeq.BLE.Core.Utils;
 
 namespace Softeq.BLE.Core.DeviceProvider
 {
-    internal sealed class BleDeviceProvider<TBleDevice, TIdentifier> : IDeviceProvider<TBleDevice, TIdentifier>
+    internal sealed class BleDeviceProvider<TIdentifier> : IDeviceProvider<object, TIdentifier>
         where TIdentifier : IEquatable<TIdentifier>
     {
         private readonly IDeviceClassProtocol<TIdentifier> _deviceClassProtocol;
-        private readonly IBleDeviceFactory<TBleDevice, TIdentifier> _deviceFactory;
+        private readonly Func<IBleDeviceBase<TIdentifier>, IBleLogger, object> _funcCreateDevice;
         private readonly IBleInfrastructure _bleInfrastructure;
         private readonly IDeviceFilter _generalDeviceFilter;
 
-        private readonly Dictionary<TIdentifier, TBleDevice> _cachedDevices = new Dictionary<TIdentifier, TBleDevice>();
+        private readonly Dictionary<TIdentifier, object> _cachedDevices = new Dictionary<TIdentifier, object>();
 
-        public IReadOnlyList<TBleDevice> KnownDevices => _cachedDevices.Values.ToList();
+        public IReadOnlyList<object> KnownDevices => _cachedDevices.Values.ToList();
 
-        public BleDeviceProvider(IDeviceClassProtocol<TIdentifier> deviceClassProtocol, IBleDeviceFactory<TBleDevice, TIdentifier> deviceFactory,
+        public BleDeviceProvider(IDeviceClassProtocol<TIdentifier> deviceClassProtocol, Func<IBleDeviceBase<TIdentifier>, IBleLogger, object> deviceFactory,
             IBleInfrastructure bleInfrastructure)
         {
             _deviceClassProtocol = deviceClassProtocol;
-            _deviceFactory = deviceFactory;
+            _funcCreateDevice = deviceFactory;
             _bleInfrastructure = bleInfrastructure;
 
             _generalDeviceFilter = new GeneralDeviceFilter(deviceClassProtocol);
         }
 
-        public TBleDevice GetDeviceById(TIdentifier deviceId)
+        public object GetDeviceById(TIdentifier deviceId)
         {
             if (!_cachedDevices.ContainsKey(deviceId))
             {
                 var bleDeviceBase = new BleDeviceBase<TIdentifier>(null, deviceId, _deviceClassProtocol, _bleInfrastructure);
-                var bleDevice = _deviceFactory.CreateDevice(bleDeviceBase, _bleInfrastructure.Logger);
+                var bleDevice = _funcCreateDevice.Invoke(bleDeviceBase, _bleInfrastructure.Logger);
                 _cachedDevices.Add(deviceId, bleDevice);
             }
 
             return _cachedDevices[deviceId];
         }
 
-        public async Task<IBleResult<IReadOnlyList<TBleDevice>>> SearchForDevicesAsync(bool includeConnected, TimeSpan timeout,
+        public async Task<IBleResult<IReadOnlyList<object>>> SearchForDevicesAsync(bool includeConnected, TimeSpan timeout,
             CancellationToken cancellationToken)
         {
             var searchResult = await _bleInfrastructure.Executor.CancelAfterTimeoutAsync(
@@ -61,18 +61,18 @@ namespace Softeq.BLE.Core.DeviceProvider
                     foundDevices.AddRange(_bleInfrastructure.SearchManager.GetConnectedDevices(_generalDeviceFilter).Select(GetBleDevice).ToList());
                 }
 
-                return BleResult.Success<IReadOnlyList<TBleDevice>>(foundDevices);
+                return BleResult.Success<IReadOnlyList<object>>(foundDevices);
             }
             else
             {
-                return searchResult.Convert<IReadOnlyList<TBleDevice>>();
+                return searchResult.Convert<IReadOnlyList<object>>();
             }
         }
 
-        public Task<IBleResult> BeginSearchForDevicesAsync(IObserver<TBleDevice> observer, bool includeConnected, TimeSpan timeout,
+        public Task<IBleResult> BeginSearchForDevicesAsync(IObserver<object> observer, bool includeConnected, TimeSpan timeout,
             CancellationToken cancellationToken)
         {
-            var observerConverter = new ObserverConverter<IDevice, TBleDevice>(observer, GetBleDevice);
+            var observerConverter = new ObserverConverter<IDevice, object>(observer, GetBleDevice);
 
             if (includeConnected)
             {
@@ -89,13 +89,13 @@ namespace Softeq.BLE.Core.DeviceProvider
             return _bleInfrastructure.SearchManager.BeginSearchForAllDevicesAsync(observerConverter, _generalDeviceFilter, timeoutCancellation.Token);
         }
 
-        private TBleDevice GetBleDevice(IDevice device)
+        private object GetBleDevice(IDevice device)
         {
             var deviceId = _deviceClassProtocol.GetIdentifier(device);
             if (!_cachedDevices.ContainsKey(deviceId))
             {
                 var bleDeviceBase = new BleDeviceBase<TIdentifier>(device, deviceId, _deviceClassProtocol, _bleInfrastructure);
-                var bleDevice = _deviceFactory.CreateDevice(bleDeviceBase, _bleInfrastructure.Logger);
+                var bleDevice = _funcCreateDevice.Invoke(bleDeviceBase, _bleInfrastructure.Logger);
                 _cachedDevices.Add(deviceId, bleDevice);
             }
 

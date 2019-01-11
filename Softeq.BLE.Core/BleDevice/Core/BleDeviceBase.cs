@@ -5,13 +5,13 @@ using System.Threading;
 using Plugin.BLE.Abstractions;
 using Plugin.BLE.Abstractions.Contracts;
 using Softeq.BLE.Core.BleDevice.Characteristic;
+using Softeq.BLE.Core.BleDevice.Factory;
 using Softeq.BLE.Core.ConnectionManager;
 using Softeq.BLE.Core.DeviceFilter;
 using Softeq.BLE.Core.DeviceProvider;
 using Softeq.BLE.Core.Listener;
 using Softeq.BLE.Core.Protocol;
 using Softeq.BLE.Core.Services;
-using Softeq.BLE.Core.BleDevice.Factory;
 
 namespace Softeq.BLE.Core.BleDevice.Core
 {

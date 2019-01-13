@@ -87,7 +87,7 @@ namespace Softeq.BLE.Core.SearchManager
         {
             try
             {
-                _logger?.Log(LogSender, $"Device discovered, DeviceName={e.Device?.Name ?? "N/A"}");
+                _logger?.Log(LogSender, $"Device discovered, DeviceName={e.Device?.Name ?? "N/A"}, id={e.Device?.Id}, state={e.Device?.State}");
                 if (_deviceFilter.IsWantedDevice(e.Device))
                 {
                     _logger?.Log(LogSender, $"Wanted device found, DeviceName={e.Device?.Name ?? "N/A"}");
